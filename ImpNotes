@@ -1,0 +1,59 @@
+@FeignClient(name="admin-client",url="${adminService.endpoint}")
+@Metrics
+@Retry(name=ADMIN_SERVICE)
+public interface AdminServiceClient{
+@PostMapping("/search")
+List<AdminProfile>search(@RequestBody ArrayList<SearchCriteria>searchCriteriaArrayList, @RequestHeader(name="x-code") String xCode)
+}
+*******************************************************************************************************************************************************************************
+@PostMapping("/update")
+@Metrics(functionality=UPDATE_ASSISTANCE, excludeMetrics={FAILURE_COUNT_400,FAILURE_COUNT_401,FAILURE_COUNT_500})
+public ResponseEntity<AssistanceUpdateDetailsResponse> updateAssistance(final @RequestBody AssistanceUpdateDetailsRequest assistanceUpdateDetails,@RequestParam final @NotNull
+LeadAssistanceUpdateContext context){
+Validate.isValidTeleSalesToken("AAUA-0001:Token Passed Is Not Correct",UPDATE_ASSISTANCE);
+validateUpdateAssistanceRequest(assistanceUpdateDetails);
+log.info("Got Request For Update State as {}",assistanceUpdateDetails.getTeleSalesId());
+return ResponseEntity.ok(assistanceService.updateAssistance(assistanceUpdateDetails));
+}
+*******************************************************************************************************************************************************************************
+public class Validate{
+      public static List<String> sourceList=Array.asList("CUSTOMER_SERVICE","TELESALES","QTS","TELESALES_WEB","TELE_CALLING","ADMIN","BRANCH_OPERATION");
+     public static void isValidTeleSalesToken(final String message, final String metricName){
+         final String source=PrimalSecurityContext.getSource();
+        if(Object.isNull(source)||!sourceList.contains(source)){
+            throw new BadRequestException(message,metricName);
+}
+
+
+}}
+************************************************************************************************************************************************
+private void validateUpdateAssistanceRequest(final AssistanceUpdateDetailsRequest assistanceUpdateDetailsRequest){
+Validate.isAlphaNumeric(assitanceUpdateDetailsRequest.getTelesalesId(),"Improper TeleSalesId",UPDATE_ASSISTANCE);
+Validate.matchCustomerIdPattern(
+  assistanceUpdateDetailsRequest.getCustomerId(),"ImproperCustomerId",updateAssistance)
+ Validate.IsAlphaNumeric(assistanceUpdateDetailsRequest.getAgentId(),"Improper AgentId",UPDATE_ASSISTANCE)
+Validate.notNull(
+assistanceUpdateDetailsRequest.getAssistanceUpdateDetails(),
+"Missing Details",
+UPDATE_ASSISTANCE);
+
+
+}
+ **************************************************************************************************
+ public static void isAlphaNumeric(
+final charSequence input, final String message, final String metricName)
+{
+       if(!StringUtils.isAlphaNumeric(input)){
+         throw new BadRequestException(message,metricName);
+}
+}
+*********************************************************************************************************
+public static void matchCustomerIdPattern(){
+  final String pattern="^[a-zA-Z0-9-_]*$";
+  if(StringUtils.isEmpty(input)||!Pattern.matches(pattern,Input)){
+      throw new BadRequestException(message,metricName);
+}
+}
+***************************
+
+
